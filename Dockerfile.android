@@ -1,15 +1,24 @@
-# Docker file to corsscompile rust code to macOS
-ARG RUST_VERSION
-FROM forbole/rust-builder:$RUST_VERSION
+FROM ubuntu:latest
+
 ARG NDK_VERSION
+ARG RUST_VERSION
+
+ENV CARGO_HOME="/opt/cargo"
+ENV RUSTUP_HOME=$CARGO_HOME
+ENV PATH="$CARGO_HOME/bin:${PATH}"
 
 RUN \
     # Check for mandatory build arguments
-    : "${NDK_VERSION:?Build argument needs to be set and non-empty.}"
+        : "${RUST_VERSION:?Build argument needs to be set and non-empty.}"
 
-# Install dev tools
 RUN apt update
-RUN apt install -y unzip
+RUN apt install -y build-essential git unzip wget
+RUN wget -O - https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain $RUST_VERSION
+
+# Allow everyone to write inside the cargo dir to allow compilation as the user who launch the docker container
+RUN chmod -R 777 $CARGO_HOME
+
+WORKDIR /workdir
 
 # Install the android NDK
 RUN export NDK_ZIP="/android-ndk-${NDK_VERSION}.zip" && \
@@ -29,7 +38,5 @@ RUN rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux
     printf '[target.aarch64-linux-android]\nlinker = "aarch64-linux-android29-clang"\n' >> $CARGO_HOME/config && \
     printf '[target.x86_64-linux-android]\nlinker = "x86_64-linux-android29-clang"\n' >> $CARGO_HOME/config && \
     printf '[target.i686-linux-android]\nlinker = "i686-linux-android29-clang"\n' >> $CARGO_HOME/config
-
-WORKDIR /workdir
 
 CMD /bin/bash
