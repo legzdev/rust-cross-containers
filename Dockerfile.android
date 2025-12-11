@@ -11,8 +11,8 @@ RUN \
     # Check for mandatory build arguments
         : "${RUST_VERSION:?Build argument needs to be set and non-empty.}"
 
-RUN apt update
-RUN apt install -y build-essential git unzip wget
+RUN apt-get update
+RUN apt-get install -y build-essential git unzip wget
 RUN wget -O - https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain $RUST_VERSION
 
 # Allow everyone to write inside the cargo dir to allow compilation as the user who launch the docker container
