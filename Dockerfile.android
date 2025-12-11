@@ -1,6 +1,6 @@
 # Docker file to corsscompile rust code to macOS
 ARG RUST_VERSION
-FROM rust-builder:$RUST_VERSION
+FROM forbole/rust-builder:$RUST_VERSION
 ARG NDK_VERSION
 
 RUN \
